@@ -13,6 +13,8 @@ class CardComponent extends React.Component {
 	    this.color = props.color;
 	    this.type = props.type;
 	    
+	    this.game = props.game;
+	    
 	    this.props.pos = this.props.key;
 	    this.props.isSpecial = this.isSpecial();
 	    
@@ -109,7 +111,9 @@ class CardComponent extends React.Component {
     }
     
     handleClick(handFunction) {
-    	this.handleCkick = handFunction;
+    	if (!this.hand) return;
+
+    	this.game.playCard(this);
     }
     
     render() {

@@ -45,10 +45,7 @@ export default class PlayerComponent extends React.Component {
 	    				item.setHand(true);
 	    				item.setPos(index, arr.length);
 		        		item.setSide('front');
-		        		var test = function(){
-		        			console.log('test 1 2 3');
-		        		};
-		        		item.handleClick(test);
+
 		        		return item.render();
 		        	}) }
     			</div>
