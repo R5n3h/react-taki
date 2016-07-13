@@ -84,26 +84,25 @@ class TakiGame extends React.Component {
 		this.handleTopCard(_topCard);
 		
 		// Set game state to 1 (Started)
-		this.setState({gameState: 1});
+		this.setState({gameState: 1, currentPlayerIndex: 0});
 	}
 	
 	isCardAllowed(card) {
-		var gameState = this.state.gameState;
-		if (state != 1) return false;
+		var topCard = this.state.topCard;
+		
+		if (this.state.gameState != 1) return false;
 
-        if (plusTwo > 0)
-        {
-            return card.Type == CardType.TwoPlus;
+        if (this.state.plusTwo > 0) {
+            return card.type == 'TWOPLUS';
         }
-        else if (inTaki)
-        {
+        else if (this.state.inTaki) {
             // In Taki, only cards of the same color are allowed
-            return card.Color == topCard.Color;
+            return card.color == thistopCard.color;
         }
 
-        return (card.Type == CardType.ChangeColor) ||
-            (card.Type == topCard.Type) ||
-            (card.Color == topCard.Color);
+        return (card.type == 'CHANGECOLOR') ||
+            (card.type == topCard.type) ||
+            (card.color == topCard.color);
 	}
 	
 	getCurrentPlayer() {
@@ -115,7 +114,6 @@ class TakiGame extends React.Component {
 	
 	playCard(card) {
 		var currentPlayer = this.getCurrentPlayer();
-		console.log(currentPlayer);
 		if (this.isCardAllowed(card) && currentPlayer.hasCard(card) 
 				|| card.type == 'CHANGECOLOR' && currentPlayer.hasChangedColor()) {
 			if (card.type == 'CHANGECOLOR') {
@@ -124,6 +122,7 @@ class TakiGame extends React.Component {
 				}
 				else if (card.color == 'NONE') {
 					// Card must have a color
+					console.log('Card doesnt has color');
 					return false;
 				}
 			}

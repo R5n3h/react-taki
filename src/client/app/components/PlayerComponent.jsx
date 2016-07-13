@@ -24,6 +24,16 @@ export default class PlayerComponent extends React.Component {
     	return this.state.hand;
     }
     
+    hasCard(card) {
+    	return (this.hand.indexOf(card) > -1)? true: false;
+    }
+    
+    removeCard(card) {
+    	card.setHand(false);
+    	var pos = this.hand.indexOf(card);
+  	  	this.hand.splice(pos, 1);
+    }
+    
     // Get card and add to hand
     addCardToHand(card) {
     	this.hand.push(card);

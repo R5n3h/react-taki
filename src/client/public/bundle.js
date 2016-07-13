@@ -176,22 +176,23 @@
 				this.handleTopCard(_topCard);
 	
 				// Set game state to 1 (Started)
-				this.setState({ gameState: 1 });
+				this.setState({ gameState: 1, currentPlayerIndex: 0 });
 			}
 		}, {
 			key: 'isCardAllowed',
 			value: function isCardAllowed(card) {
-				var gameState = this.state.gameState;
-				if (state != 1) return false;
+				var topCard = this.state.topCard;
 	
-				if (plusTwo > 0) {
-					return card.Type == CardType.TwoPlus;
-				} else if (inTaki) {
+				if (this.state.gameState != 1) return false;
+	
+				if (this.state.plusTwo > 0) {
+					return card.type == 'TWOPLUS';
+				} else if (this.state.inTaki) {
 					// In Taki, only cards of the same color are allowed
-					return card.Color == topCard.Color;
+					return card.color == thistopCard.color;
 				}
 	
-				return card.Type == CardType.ChangeColor || card.Type == topCard.Type || card.Color == topCard.Color;
+				return card.type == 'CHANGECOLOR' || card.type == topCard.type || card.color == topCard.color;
 			}
 		}, {
 			key: 'getCurrentPlayer',
@@ -205,13 +206,13 @@
 			key: 'playCard',
 			value: function playCard(card) {
 				var currentPlayer = this.getCurrentPlayer();
-				console.log(currentPlayer);
 				if (this.isCardAllowed(card) && currentPlayer.hasCard(card) || card.type == 'CHANGECOLOR' && currentPlayer.hasChangedColor()) {
 					if (card.type == 'CHANGECOLOR') {
 						if (inTaki && card.color != topCard.color) {
 							card.Color = topCard.color;
 						} else if (card.color == 'NONE') {
 							// Card must have a color
+							console.log('Card doesnt has color');
 							return false;
 						}
 					}
@@ -21550,6 +21551,18 @@
 	    key: 'getHand',
 	    value: function getHand() {
 	      return this.state.hand;
+	    }
+	  }, {
+	    key: 'hasCard',
+	    value: function hasCard(card) {
+	      return this.hand.indexOf(card) > -1 ? true : false;
+	    }
+	  }, {
+	    key: 'removeCard',
+	    value: function removeCard(card) {
+	      card.setHand(false);
+	      var pos = this.hand.indexOf(card);
+	      this.hand.splice(pos, 1);
 	    }
 	
 	    // Get card and add to hand
