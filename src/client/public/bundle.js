@@ -96,6 +96,7 @@
 			var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(TakiGame).call(this, props));
 	
 			_this.deck = null;
+			_this.initPlayers = [];
 	
 			_this.state = {
 				config: props.config || [],
@@ -155,15 +156,16 @@
 			key: 'startGame',
 			value: function startGame() {
 				var game = this;
-				var players = this.state.players;
-				var ronPlayer = new _PlayerComponent2.default({ key: 1, game: game, config: { name: "Ron Sneh", type: 'Human' } });
+				var playerConfig = { name: "Ron Sneh", type: 'Human' };
+				var ronPlayer = { config: playerConfig, hand: [], game: game };
 	
 				// Draw cards for players
 				for (var i = 0; i < this.startingCardsNumber; i++) {
-					ronPlayer.addCardToHand(this.deck.drawCard());
+					ronPlayer.hand.push(this.deck.drawCard());
 				}
 	
-				this.addPlayer(ronPlayer);
+				//this.addPlayer(ronPlayer);
+				this.initPlayers.push(ronPlayer);
 	
 				var _topCard = this.state.topCard;
 				while (_topCard == null) {
@@ -206,11 +208,14 @@
 			key: 'playCard',
 			value: function playCard(card) {
 				var currentPlayer = this.getCurrentPlayer();
+				var inTaki = this.state.inTaki;
+	
 				if (this.isCardAllowed(card) && currentPlayer.hasCard(card) || card.type == 'CHANGECOLOR' && currentPlayer.hasChangedColor()) {
+					console.log(card.color);
 					if (card.type == 'CHANGECOLOR') {
 						if (inTaki && card.color != topCard.color) {
-							card.Color = topCard.color;
-						} else if (card.color == 'NONE') {
+							card.color = topCard.color;
+						} else if (card.color == null) {
 							// Card must have a color
 							console.log('Card doesnt has color');
 							return false;
@@ -222,6 +227,16 @@
 				}
 			}
 		}, {
+			key: 'componentDidUpdate',
+			value: function componentDidUpdate(prevProps, prevState) {
+				console.log('TakiGame componentDidUpdate');
+			}
+		}, {
+			key: 'componentWillUpdate',
+			value: function componentWillUpdate(nextProps, nextState) {
+				console.log('TakiGame componentWillUpdate');
+			}
+		}, {
 			key: 'render',
 			value: function render() {
 				return _react2.default.createElement(
@@ -229,7 +244,7 @@
 					{ className: 'taki-game' },
 					_react2.default.createElement(_DeckComponent2.default, { handleDeck: this.handleDeck.bind(this), handleTopCard: this.handleTopCard.bind(this), handleGame: this }),
 					_react2.default.createElement(_GameBarComponent2.default, { gameData: this.state }),
-					_react2.default.createElement(_PlayersComponent2.default, { players: this.state.players }),
+					_react2.default.createElement(_PlayersComponent2.default, { players: this.state.players, initPlayers: this.initPlayers }),
 					this.state.gameState in [1, 0] ? _react2.default.createElement(
 						'button',
 						{ onClick: this.toggleGame.bind(this) },
@@ -21112,6 +21127,8 @@
 				pile: _this.pile
 			};
 	
+			_this.getCard = _this.getCard.bind(_this);
+	
 			// Return DeckComponent to Game
 			_this.props.handleDeck(_this);
 			return _this;
@@ -21157,6 +21174,12 @@
 				this.cards.splice(pos, 0, card);
 			}
 		}, {
+			key: 'removeCard',
+			value: function removeCard(card) {
+				var pos = this.cards.indexOf(card);
+				this.cards.splice(pos, 1);
+			}
+		}, {
 			key: 'addCardToPile',
 			value: function addCardToPile(card) {
 				card.setSide('front');
@@ -21191,6 +21214,23 @@
 				this.setState({ cards: this.cards, pile: this.pile });
 			}
 		}, {
+			key: 'getCard',
+			value: function getCard() {
+				if (!this.game.state.gameState) {
+					console.warn('Game has not started yet.');
+					return;
+				}
+				// get card from card to currentPlayer
+				var card = this.cards.first();
+				var currentPlayerIndex = this.game.getCurrentPlayer();
+	
+				this.removeCard(card);
+	
+				currentPlayerIndex.addCardToHand(card);
+	
+				this.setState({ cards: this.cards, pile: this.pile });
+			}
+		}, {
 			key: 'render',
 			value: function render() {
 				return _react2.default.createElement(
@@ -21201,7 +21241,7 @@
 						{ className: 'cards-container' },
 						_react2.default.createElement(
 							'div',
-							{ className: 'cards' },
+							{ className: 'cards', onClick: this.getCard },
 							this.state.cards.map(function (item, index, arr) {
 								item.setPos(index, arr.length);
 								return item.render();
@@ -21504,7 +21544,7 @@
 	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
-	  value: true
+	   value: true
 	});
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -21526,93 +21566,82 @@
 	 */
 	
 	var PlayerComponent = function (_React$Component) {
-	  _inherits(PlayerComponent, _React$Component);
+	   _inherits(PlayerComponent, _React$Component);
 	
-	  function PlayerComponent(props) {
-	    _classCallCheck(this, PlayerComponent);
+	   function PlayerComponent(props) {
+	      _classCallCheck(this, PlayerComponent);
 	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(PlayerComponent).call(this, props));
+	      var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(PlayerComponent).call(this, props));
 	
-	    _this.hand = [];
+	      _this.state = {
+	         config: props.config,
+	         game: props.game,
+	         hand: props.hand
+	      };
 	
-	    _this.state = {
-	      config: props.config,
-	      game: props.game,
-	      hand: _this.hand
-	    };
+	      console.log('Welcome our new player, ' + _this.state.config.name + '.');
+	      return _this;
+	   }
 	
-	    console.log('Welcome our new player, ' + _this.state.config.name + '.');
+	   _createClass(PlayerComponent, [{
+	      key: 'getHand',
+	      value: function getHand() {
+	         return this.state.hand;
+	      }
+	   }, {
+	      key: 'hasCard',
+	      value: function hasCard(card) {
+	         var hand = this.state.hand;
+	         return hand.indexOf(card) > -1 ? true : false;
+	      }
+	   }, {
+	      key: 'removeCard',
+	      value: function removeCard(card) {
+	         card.setHand(false);
+	         var pos = this.state.hand.indexOf(card);
+	         this.state.hand.splice(pos, 1);
+	      }
 	
-	    _this.handlePlayerClick = _this.handlePlayerClick.bind(_this);
-	    return _this;
-	  }
+	      // Get card and add to hand
 	
-	  _createClass(PlayerComponent, [{
-	    key: 'getHand',
-	    value: function getHand() {
-	      return this.state.hand;
-	    }
-	  }, {
-	    key: 'hasCard',
-	    value: function hasCard(card) {
-	      return this.hand.indexOf(card) > -1 ? true : false;
-	    }
-	  }, {
-	    key: 'removeCard',
-	    value: function removeCard(card) {
-	      card.setHand(false);
-	      var pos = this.hand.indexOf(card);
-	      this.hand.splice(pos, 1);
-	    }
+	   }, {
+	      key: 'addCardToHand',
+	      value: function addCardToHand(card) {
+	         var hand = this.state.hand;
+	         hand.push(card);
 	
-	    // Get card and add to hand
+	         this.setState({ 'hand': hand });
+	      }
+	   }, {
+	      key: 'componentDidMount',
+	      value: function componentDidMount() {
+	         console.log('PlayerComponent componentDidMount');
+	      }
+	   }, {
+	      key: 'render',
+	      value: function render() {
+	         return _react2.default.createElement(
+	            'div',
+	            { className: 'player' },
+	            _react2.default.createElement(
+	               'div',
+	               { className: 'hand' },
+	               this.state.hand.map(function (item, index, arr) {
+	                  item.setHand(true);
+	                  item.setPos(index, arr.length);
+	                  item.setSide('front');
 	
-	  }, {
-	    key: 'addCardToHand',
-	    value: function addCardToHand(card) {
-	      this.hand.push(card);
-	    }
-	  }, {
-	    key: 'handlePlayerClick',
-	    value: function handlePlayerClick() {
-	      console.log('really??');
-	    }
-	  }, {
-	    key: 'componentWillMount',
-	    value: function componentWillMount() {
-	      this.setState({ hand: this.hand });
-	    }
-	  }, {
-	    key: 'render',
-	    value: function render() {
-	      return _react2.default.createElement(
-	        'div',
-	        { className: 'player', key: this.props.key },
-	        _react2.default.createElement(
-	          'div',
-	          { className: 'hand' },
-	          this.state.hand.map(function (item, index, arr) {
-	            item.setHand(true);
-	            item.setPos(index, arr.length);
-	            item.setSide('front');
+	                  return item.render();
+	               })
+	            )
+	         );
+	      }
+	   }]);
 	
-	            return item.render();
-	          })
-	        )
-	      );
-	    }
-	  }]);
-	
-	  return PlayerComponent;
+	   return PlayerComponent;
 	}(_react2.default.Component);
 	
 	exports.default = PlayerComponent;
-	
-	
-	PlayerComponent.propTypes = {
-	  config: _react2.default.PropTypes.node,
-	  game: _react2.default.PropTypes.node.isRequired
-	};
 
 /***/ },
 /* 174 */
@@ -21683,7 +21712,7 @@
   \********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
 		value: true
@@ -21694,6 +21723,10 @@
 	var _react = __webpack_require__(/*! react */ 1);
 	
 	var _react2 = _interopRequireDefault(_react);
+	
+	var _PlayerComponent = __webpack_require__(/*! ./PlayerComponent.jsx */ 173);
+	
+	var _PlayerComponent2 = _interopRequireDefault(_PlayerComponent);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -21712,19 +21745,29 @@
 			var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(PlayersComponent).call(this, props));
 	
 			_this.state = {
+				initpPlayers: _this.props.initPlayers,
 				players: _this.props.players
 			};
 			return _this;
 		}
 	
 		_createClass(PlayersComponent, [{
-			key: "render",
+			key: 'render',
 			value: function render() {
+				var players = this.state.players;
+	
 				return _react2.default.createElement(
-					"div",
-					{ className: "players-container" },
-					this.state.players.map(function (item, index, arr) {
-						return item.render();
+					'div',
+					{ className: 'players-container' },
+					this.state.initpPlayers.map(function (item, index, arr) {
+						return _react2.default.createElement(_PlayerComponent2.default, { key: index, game: item.game, config: item.config, hand: item.hand,
+							ref: function ref(player) {
+								if (player != null) {
+									if (players.indexOf(player) == -1) {
+										players.push(player);
+									}
+								}
+							} });
 					})
 				);
 			}

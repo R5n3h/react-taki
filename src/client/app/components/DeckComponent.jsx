@@ -20,6 +20,8 @@ export default class DeckComponent extends React.Component {
     	pile: this.pile
     }
     
+    this.getCard = this.getCard.bind(this);
+    
     // Return DeckComponent to Game
     this.props.handleDeck(this);
   }
@@ -61,6 +63,11 @@ export default class DeckComponent extends React.Component {
 	  this.cards.splice(pos, 0, card);
   }
   
+  removeCard(card) {
+	  var pos = this.cards.indexOf(card);
+	  this.cards.splice(pos, 1);
+  }
+  
   addCardToPile(card) {
 		card.setSide('front');
 
@@ -89,11 +96,27 @@ export default class DeckComponent extends React.Component {
 	  this.setState({cards: this.cards, pile: this.pile});
   }
   
+  getCard() {
+	  if (!this.game.state.gameState) {
+		  console.warn('Game has not started yet.');
+		  return;
+	  }
+	  // get card from card to currentPlayer
+	  var card = this.cards.first();
+	  var currentPlayerIndex = this.game.getCurrentPlayer();
+	  
+	  this.removeCard(card);
+	  
+	  currentPlayerIndex.addCardToHand(card);
+	  
+	  this.setState({cards: this.cards, pile: this.pile});
+  }
+  
   render() {
 	  return (
 		<div className="deck">
 			<div className="cards-container">
-				<div className="cards">
+				<div className="cards" onClick={this.getCard}>
 					{ this.state.cards.map(function(item, index, arr) {
 						item.setPos(index, arr.length);
 						return item.render();

@@ -11,6 +11,7 @@ class TakiGame extends React.Component {
 		super(props);
 
 		this.deck = null;
+		this.initPlayers = [];
 
 		this.state = {
 			config: props.config || [],
@@ -63,15 +64,16 @@ class TakiGame extends React.Component {
 
 	startGame() {
 		var game = this;
-		var players = this.state.players;
-		var ronPlayer = new PlayerComponent({key: 1, game: game, config: { name: "Ron Sneh", type: 'Human'}});
+		var playerConfig = {name: "Ron Sneh", type: 'Human'};
+		var ronPlayer = {config: playerConfig, hand: [], game: game};
 
 		// Draw cards for players
 		for (var i = 0; i < this.startingCardsNumber; i++) {
-			ronPlayer.addCardToHand(this.deck.drawCard())
+			ronPlayer.hand.push(this.deck.drawCard())
 		}
 		
-		this.addPlayer(ronPlayer);
+		//this.addPlayer(ronPlayer);
+		this.initPlayers.push(ronPlayer);
 
 		var _topCard = this.state.topCard;
 		while (_topCard == null) {
@@ -114,13 +116,16 @@ class TakiGame extends React.Component {
 	
 	playCard(card) {
 		var currentPlayer = this.getCurrentPlayer();
+		var inTaki = this.state.inTaki;
+		
 		if (this.isCardAllowed(card) && currentPlayer.hasCard(card) 
 				|| card.type == 'CHANGECOLOR' && currentPlayer.hasChangedColor()) {
+			console.log(card.color);
 			if (card.type == 'CHANGECOLOR') {
 				if (inTaki && card.color != topCard.color) {
-					card.Color = topCard.color;
+					card.color = topCard.color;
 				}
-				else if (card.color == 'NONE') {
+				else if (card.color == null) {
 					// Card must have a color
 					console.log('Card doesnt has color');
 					return false;
@@ -132,12 +137,20 @@ class TakiGame extends React.Component {
 		}
 	}
 	
+	componentDidUpdate(prevProps, prevState) {
+		console.log('TakiGame componentDidUpdate');
+	}
+	
+	componentWillUpdate(nextProps, nextState) {
+		console.log('TakiGame componentWillUpdate');
+	}
+
 	render() {
 		return (
 			<div className="taki-game">
 				<DeckComponent handleDeck={this.handleDeck.bind(this)} handleTopCard={this.handleTopCard.bind(this)} handleGame={this} />
 				<GameBarComponent gameData={this.state} />
-				<PlayersComponent players={this.state.players} />
+				<PlayersComponent players={this.state.players} initPlayers={this.initPlayers} />
 				{ this.state.gameState in [1,0] ?
 						<button onClick={this.toggleGame.bind(this)}>{this.state.gameState == 0 ? 'Start' : 'Stop'}</button> : null
 				}

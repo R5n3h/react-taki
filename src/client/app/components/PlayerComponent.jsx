@@ -6,18 +6,14 @@ import React from 'react';
 export default class PlayerComponent extends React.Component {
 	constructor(props) {
 	    super(props);
-	    
-	    this.hand = [];
 
 	    this.state = {
 	    	config: props.config,
 	    	game: props.game,
-	    	hand: this.hand
+	    	hand: props.hand
 	    };
 	    
 	    console.log('Welcome our new player, ' + this.state.config.name + '.');
-	    
-	    this.handlePlayerClick = this.handlePlayerClick.bind(this);
 	}
     
     getHand() {
@@ -25,31 +21,31 @@ export default class PlayerComponent extends React.Component {
     }
     
     hasCard(card) {
-    	return (this.hand.indexOf(card) > -1)? true: false;
+    	var hand = this.state.hand;
+    	return (hand.indexOf(card) > -1)? true: false;
     }
     
     removeCard(card) {
     	card.setHand(false);
-    	var pos = this.hand.indexOf(card);
-  	  	this.hand.splice(pos, 1);
+    	var pos = this.state.hand.indexOf(card);
+  	  	this.state.hand.splice(pos, 1);
     }
     
     // Get card and add to hand
     addCardToHand(card) {
-    	this.hand.push(card);
+    	var hand = this.state.hand;
+    	hand.push(card);
+    	
+    	this.setState({'hand': hand});
     }
     
-    handlePlayerClick() {
-    	console.log('really??');
+    componentDidMount() {
+    	console.log('PlayerComponent componentDidMount');
     }
-    
-    componentWillMount() {
-    	this.setState({hand: this.hand});
-    }
-    
+
 	render() {
     	return (
-    		<div className="player" key={this.props.key}>
+    		<div className="player">
     			<div className="hand">
 	    			{ this.state.hand.map(function(item, index, arr) {
 	    				item.setHand(true);
@@ -63,8 +59,3 @@ export default class PlayerComponent extends React.Component {
     	);
     }
 }
-
-PlayerComponent.propTypes = {
-	config: React.PropTypes.node,
-	game: React.PropTypes.node.isRequired
-};
