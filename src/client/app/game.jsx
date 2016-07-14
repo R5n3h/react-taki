@@ -114,11 +114,14 @@ class TakiGame extends React.Component {
 	
 	playCard(card) {
 		var currentPlayer = this.getCurrentPlayer();
+		var topCard = this.state.topCard;
+
 		if (this.isCardAllowed(card) && currentPlayer.hasCard(card) 
 				|| card.type == 'CHANGECOLOR' && currentPlayer.hasChangedColor()) {
 			if (card.type == 'CHANGECOLOR') {
-				if (inTaki && card.color != topCard.color) {
-					card.Color = topCard.color;
+				console.log(this.state.inTaki);
+				if (this.state.inTaki && card.color != topCard.color) {
+					card.color = topCard.color;
 				}
 				else if (card.color == 'NONE') {
 					// Card must have a color
