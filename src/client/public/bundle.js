@@ -208,12 +208,10 @@
 			key: 'playCard',
 			value: function playCard(card) {
 				var currentPlayer = this.getCurrentPlayer();
-				var inTaki = this.state.inTaki;
 	
 				if (this.isCardAllowed(card) && currentPlayer.hasCard(card) || card.type == 'CHANGECOLOR' && currentPlayer.hasChangedColor()) {
-					console.log(card.color);
 					if (card.type == 'CHANGECOLOR') {
-						if (inTaki && card.color != topCard.color) {
+						if (this.state.inTaki && card.color != this.state.topCard.color) {
 							card.color = topCard.color;
 						} else if (card.color == null) {
 							// Card must have a color
