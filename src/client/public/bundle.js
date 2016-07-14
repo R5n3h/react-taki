@@ -65,15 +65,15 @@
 	
 	var _DeckComponent2 = _interopRequireDefault(_DeckComponent);
 	
-	var _PlayerComponent = __webpack_require__(/*! ./components/PlayerComponent.jsx */ 174);
+	var _PlayerComponent = __webpack_require__(/*! ./components/PlayerComponent.jsx */ 173);
 	
 	var _PlayerComponent2 = _interopRequireDefault(_PlayerComponent);
 	
-	var _GameBarComponent = __webpack_require__(/*! ./components/GameBarComponent.jsx */ 175);
+	var _GameBarComponent = __webpack_require__(/*! ./components/GameBarComponent.jsx */ 174);
 	
 	var _GameBarComponent2 = _interopRequireDefault(_GameBarComponent);
 	
-	var _PlayersComponent = __webpack_require__(/*! ./components/PlayersComponent.jsx */ 176);
+	var _PlayersComponent = __webpack_require__(/*! ./components/PlayersComponent.jsx */ 175);
 	
 	var _PlayersComponent2 = _interopRequireDefault(_PlayersComponent);
 	
@@ -176,7 +176,50 @@
 				this.handleTopCard(_topCard);
 	
 				// Set game state to 1 (Started)
-				this.setState({ gameState: 1 });
+				this.setState({ gameState: 1, currentPlayerIndex: 0 });
+			}
+		}, {
+			key: 'isCardAllowed',
+			value: function isCardAllowed(card) {
+				var topCard = this.state.topCard;
+	
+				if (this.state.gameState != 1) return false;
+	
+				if (this.state.plusTwo > 0) {
+					return card.type == 'TWOPLUS';
+				} else if (this.state.inTaki) {
+					// In Taki, only cards of the same color are allowed
+					return card.color == thistopCard.color;
+				}
+	
+				return card.type == 'CHANGECOLOR' || card.type == topCard.type || card.color == topCard.color;
+			}
+		}, {
+			key: 'getCurrentPlayer',
+			value: function getCurrentPlayer() {
+				if (this.state.currentPlayerIndex == -1) return;
+	
+				var players = this.state.players;
+				return players[this.state.currentPlayerIndex];
+			}
+		}, {
+			key: 'playCard',
+			value: function playCard(card) {
+				var currentPlayer = this.getCurrentPlayer();
+				if (this.isCardAllowed(card) && currentPlayer.hasCard(card) || card.type == 'CHANGECOLOR' && currentPlayer.hasChangedColor()) {
+					if (card.type == 'CHANGECOLOR') {
+						if (inTaki && card.color != topCard.color) {
+							card.Color = topCard.color;
+						} else if (card.color == 'NONE') {
+							// Card must have a color
+							console.log('Card doesnt has color');
+							return false;
+						}
+					}
+	
+					currentPlayer.removeCard(card);
+					this.handleTopCard(card);
+				}
 			}
 		}, {
 			key: 'render',
@@ -184,7 +227,7 @@
 				return _react2.default.createElement(
 					'div',
 					{ className: 'taki-game' },
-					_react2.default.createElement(_DeckComponent2.default, { handleDeck: this.handleDeck.bind(this), handleTopCard: this.handleTopCard.bind(this) }),
+					_react2.default.createElement(_DeckComponent2.default, { handleDeck: this.handleDeck.bind(this), handleTopCard: this.handleTopCard.bind(this), handleGame: this }),
 					_react2.default.createElement(_GameBarComponent2.default, { gameData: this.state }),
 					_react2.default.createElement(_PlayersComponent2.default, { players: this.state.players }),
 					this.state.gameState in [1, 0] ? _react2.default.createElement(
@@ -21039,7 +21082,7 @@
 	
 	var _CardTypes = __webpack_require__(/*! ./CardTypes.jsx */ 171);
 	
-	var _CardColors = __webpack_require__(/*! ./CardColors.jsx */ 173);
+	var _CardColors = __webpack_require__(/*! ./CardColors.jsx */ 172);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -21056,6 +21099,8 @@
 			_classCallCheck(this, DeckComponent);
 	
 			var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(DeckComponent).call(this, props));
+	
+			_this.game = _this.props.handleGame;
 	
 			_this.cards = [];
 			_this.pile = [];
@@ -21076,14 +21121,15 @@
 			key: 'createCards',
 			value: function createCards() {
 				var cards = this.cards;
+				var game = this.game;
 	
 				var pos = 112;
 				for (var type in _CardTypes.CardTypes) {
 					if (_CardTypes.CardTypes[type] != _CardTypes.CardTypes.CHANGECOLOR && _CardTypes.CardTypes[type] != _CardTypes.CardTypes.KING && _CardTypes.CardTypes[type] != _CardTypes.CardTypes.SUPERTAKI) {
 						for (var color in _CardColors.CardColors) {
 							if (_CardColors.CardColors[color] != _CardColors.CardColors.NONE) {
-								cards.push(new _CardComponent2.default({ color: color, type: type, key: pos - 1 }));
-								cards.push(new _CardComponent2.default({ color: color, type: type, key: pos - 2 }));
+								cards.push(new _CardComponent2.default({ color: color, type: type, key: pos - 1, game: game }));
+								cards.push(new _CardComponent2.default({ color: color, type: type, key: pos - 2, game: game }));
 								pos -= 2;
 							}
 						}
@@ -21091,13 +21137,13 @@
 				}
 	
 				for (var i = 0; i < 2; i++) {
-					cards.push(new _CardComponent2.default({ type: _CardTypes.CardTypes.KING, color: _CardColors.CardColors.NONE, key: Math.random() }));
-					cards.push(new _CardComponent2.default({ type: 'SUPERTAKI', color: _CardColors.CardColors.NONE, key: Math.random() }));
+					cards.push(new _CardComponent2.default({ type: _CardTypes.CardTypes.KING, color: _CardColors.CardColors.NONE, key: Math.random(), game: game }));
+					cards.push(new _CardComponent2.default({ type: 'SUPERTAKI', color: _CardColors.CardColors.NONE, key: Math.random(), game: game }));
 					pos -= 2;
 				}
 	
 				for (var i = 0; i < 4; i++) {
-					cards.push(new _CardComponent2.default({ type: 'CHANGECOLOR', color: _CardColors.CardColors.NONE, key: pos }));
+					cards.push(new _CardComponent2.default({ type: 'CHANGECOLOR', color: _CardColors.CardColors.NONE, key: pos, game: game }));
 					pos--;
 				}
 				this.cards = cards;
@@ -21231,6 +21277,8 @@
 	    _this.color = props.color;
 	    _this.type = props.type;
 	
+	    _this.game = props.game;
+	
 	    _this.props.pos = _this.props.key;
 	    _this.props.isSpecial = _this.isSpecial();
 	
@@ -21341,7 +21389,9 @@
 	  }, {
 	    key: 'handleClick',
 	    value: function handleClick(handFunction) {
-	      this.handleCkick = handFunction;
+	      if (!this.hand) return;
+	
+	      this.game.playCard(this);
 	    }
 	  }, {
 	    key: 'render',
@@ -21424,8 +21474,7 @@
 	exports.CardTypes = CardTypes;
 
 /***/ },
-/* 172 */,
-/* 173 */
+/* 172 */
 /*!**************************************************!*\
   !*** ./src/client/app/components/CardColors.jsx ***!
   \**************************************************/
@@ -21446,7 +21495,7 @@
 	exports.CardColors = CardColors;
 
 /***/ },
-/* 174 */
+/* 173 */
 /*!*******************************************************!*\
   !*** ./src/client/app/components/PlayerComponent.jsx ***!
   \*******************************************************/
@@ -21503,6 +21552,18 @@
 	    value: function getHand() {
 	      return this.state.hand;
 	    }
+	  }, {
+	    key: 'hasCard',
+	    value: function hasCard(card) {
+	      return this.hand.indexOf(card) > -1 ? true : false;
+	    }
+	  }, {
+	    key: 'removeCard',
+	    value: function removeCard(card) {
+	      card.setHand(false);
+	      var pos = this.hand.indexOf(card);
+	      this.hand.splice(pos, 1);
+	    }
 	
 	    // Get card and add to hand
 	
@@ -21534,10 +21595,7 @@
 	            item.setHand(true);
 	            item.setPos(index, arr.length);
 	            item.setSide('front');
-	            var test = function test() {
-	              console.log('test 1 2 3');
-	            };
-	            item.handleClick(test);
+	
 	            return item.render();
 	          })
 	        )
@@ -21557,7 +21615,7 @@
 	};
 
 /***/ },
-/* 175 */
+/* 174 */
 /*!********************************************************!*\
   !*** ./src/client/app/components/GameBarComponent.jsx ***!
   \********************************************************/
@@ -21619,7 +21677,7 @@
 	exports.default = GameBarComponent;
 
 /***/ },
-/* 176 */
+/* 175 */
 /*!********************************************************!*\
   !*** ./src/client/app/components/PlayersComponent.jsx ***!
   \********************************************************/

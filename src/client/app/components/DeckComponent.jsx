@@ -8,6 +8,8 @@ export default class DeckComponent extends React.Component {
   constructor(props) {
     super(props);
 
+    this.game = this.props.handleGame;
+    
     this.cards = [];
     this.pile = [];
     
@@ -24,14 +26,15 @@ export default class DeckComponent extends React.Component {
   
   createCards() {
 	  var cards = this.cards;
+	  var game = this.game;
 	  
 	  var pos = 112;
 	  for (var type in CardTypes) {
 		  if (CardTypes[type] != CardTypes.CHANGECOLOR && CardTypes[type] != CardTypes.KING && CardTypes[type] != CardTypes.SUPERTAKI) {
 			  for (var color in CardColors) {
 				  if (CardColors[color] != CardColors.NONE) {
-					  cards.push(new CardComponent({color: color, type: type, key: pos-1}));
-					  cards.push(new CardComponent({color: color, type: type, key: pos-2}));
+					  cards.push(new CardComponent({color: color, type: type, key: pos-1, game: game}));
+					  cards.push(new CardComponent({color: color, type: type, key: pos-2, game: game}));
 					  pos -= 2;
 				  }
 			  }
@@ -39,13 +42,13 @@ export default class DeckComponent extends React.Component {
 	  }
 	  
 	  for (var i = 0; i < 2; i++) {
-		  cards.push(new CardComponent({type: CardTypes.KING, color: CardColors.NONE, key: Math.random()}));
-		  cards.push(new CardComponent({type: 'SUPERTAKI', color: CardColors.NONE, key: Math.random()}));
+		  cards.push(new CardComponent({type: CardTypes.KING, color: CardColors.NONE, key: Math.random(), game: game}));
+		  cards.push(new CardComponent({type: 'SUPERTAKI', color: CardColors.NONE, key: Math.random(), game: game}));
 		  pos -= 2;
 	  }
 	  
 	  for (var i = 0; i < 4; i++) {
-		  cards.push(new CardComponent({type: 'CHANGECOLOR', color: CardColors.NONE, key: pos}));
+		  cards.push(new CardComponent({type: 'CHANGECOLOR', color: CardColors.NONE, key: pos, game: game}));
 		  pos--;
 	  }
 	  this.cards = cards;

@@ -84,13 +84,58 @@ class TakiGame extends React.Component {
 		this.handleTopCard(_topCard);
 		
 		// Set game state to 1 (Started)
-		this.setState({gameState: 1});
+		this.setState({gameState: 1, currentPlayerIndex: 0});
+	}
+	
+	isCardAllowed(card) {
+		var topCard = this.state.topCard;
+		
+		if (this.state.gameState != 1) return false;
+
+        if (this.state.plusTwo > 0) {
+            return card.type == 'TWOPLUS';
+        }
+        else if (this.state.inTaki) {
+            // In Taki, only cards of the same color are allowed
+            return card.color == thistopCard.color;
+        }
+
+        return (card.type == 'CHANGECOLOR') ||
+            (card.type == topCard.type) ||
+            (card.color == topCard.color);
+	}
+	
+	getCurrentPlayer() {
+		if (this.state.currentPlayerIndex == -1) return;
+		
+		var players = this.state.players;
+		return players[this.state.currentPlayerIndex]
+	}
+	
+	playCard(card) {
+		var currentPlayer = this.getCurrentPlayer();
+		if (this.isCardAllowed(card) && currentPlayer.hasCard(card) 
+				|| card.type == 'CHANGECOLOR' && currentPlayer.hasChangedColor()) {
+			if (card.type == 'CHANGECOLOR') {
+				if (inTaki && card.color != topCard.color) {
+					card.Color = topCard.color;
+				}
+				else if (card.color == 'NONE') {
+					// Card must have a color
+					console.log('Card doesnt has color');
+					return false;
+				}
+			}
+			
+			currentPlayer.removeCard(card);
+			this.handleTopCard(card);
+		}
 	}
 	
 	render() {
 		return (
 			<div className="taki-game">
-				<DeckComponent handleDeck={this.handleDeck.bind(this)} handleTopCard={this.handleTopCard.bind(this)} />
+				<DeckComponent handleDeck={this.handleDeck.bind(this)} handleTopCard={this.handleTopCard.bind(this)} handleGame={this} />
 				<GameBarComponent gameData={this.state} />
 				<PlayersComponent players={this.state.players} />
 				{ this.state.gameState in [1,0] ?

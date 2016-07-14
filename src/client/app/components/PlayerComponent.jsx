@@ -24,6 +24,16 @@ export default class PlayerComponent extends React.Component {
     	return this.state.hand;
     }
     
+    hasCard(card) {
+    	return (this.hand.indexOf(card) > -1)? true: false;
+    }
+    
+    removeCard(card) {
+    	card.setHand(false);
+    	var pos = this.hand.indexOf(card);
+  	  	this.hand.splice(pos, 1);
+    }
+    
     // Get card and add to hand
     addCardToHand(card) {
     	this.hand.push(card);
@@ -45,10 +55,7 @@ export default class PlayerComponent extends React.Component {
 	    				item.setHand(true);
 	    				item.setPos(index, arr.length);
 		        		item.setSide('front');
-		        		var test = function(){
-		        			console.log('test 1 2 3');
-		        		};
-		        		item.handleClick(test);
+
 		        		return item.render();
 		        	}) }
     			</div>
