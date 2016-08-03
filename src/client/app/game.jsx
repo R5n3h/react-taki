@@ -66,13 +66,15 @@ class TakiGame extends React.Component {
 		var game = this;
 		var playerConfig = {name: "Ron Sneh", type: 'Human'};
 		var ronPlayer = {config: playerConfig, hand: [], game: game};
+		var deck = this.refs.deck;
+		
+		deck.createCards();
 
 		// Draw cards for players
 		for (var i = 0; i < this.startingCardsNumber; i++) {
 			ronPlayer.hand.push(this.deck.drawCard())
 		}
-		
-		//this.addPlayer(ronPlayer);
+
 		this.initPlayers.push(ronPlayer);
 
 		var _topCard = this.state.topCard;
@@ -107,13 +109,6 @@ class TakiGame extends React.Component {
             (card.color == topCard.color);
 	}
 	
-	getCurrentPlayer() {
-		if (this.state.currentPlayerIndex == -1) return;
-		
-		var players = this.state.players;
-		return players[this.state.currentPlayerIndex]
-	}
-	
 	playCard(card) {
 		var currentPlayer = this.getCurrentPlayer();
 
@@ -134,6 +129,13 @@ class TakiGame extends React.Component {
 			this.handleTopCard(card);
 		}
 	}
+
+	getCurrentPlayer() {
+		if (this.state.currentPlayerIndex == -1) return;
+		
+		var players = this.state.players;
+		return players[this.state.currentPlayerIndex]
+	}
 	
 	componentDidUpdate(prevProps, prevState) {
 		console.log('TakiGame componentDidUpdate');
@@ -146,9 +148,9 @@ class TakiGame extends React.Component {
 	render() {
 		return (
 			<div className="taki-game">
-				<DeckComponent handleDeck={this.handleDeck.bind(this)} handleTopCard={this.handleTopCard.bind(this)} handleGame={this} />
-				<GameBarComponent gameData={this.state} />
-				<PlayersComponent players={this.state.players} initPlayers={this.initPlayers} />
+				<DeckComponent handleDeck={this.handleDeck.bind(this)} handleTopCard={this.handleTopCard.bind(this)} handleGame={this} ref="deck" />
+				<GameBarComponent gameData={this.state} ref="gameBar" />
+				<PlayersComponent players={this.state.players} initPlayers={this.initPlayers} ref="players" />
 				{ this.state.gameState in [1,0] ?
 						<button onClick={this.toggleGame.bind(this)}>{this.state.gameState == 0 ? 'Start' : 'Stop'}</button> : null
 				}

@@ -13,8 +13,6 @@ export default class DeckComponent extends React.Component {
     this.cards = [];
     this.pile = [];
     
-    this.createCards();
-    
     this.state = {
     	cards: this.cards,
     	pile: this.pile
