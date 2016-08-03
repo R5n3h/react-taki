@@ -1,5 +1,5 @@
 *~
 node_modules
 .DS_Store
-bundle.js
-bundle.js.map
+src/client/public/bundle.js
+src/client/public/bundle.js.map
